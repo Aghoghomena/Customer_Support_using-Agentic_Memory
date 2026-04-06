@@ -1,0 +1,5 @@
+Always acknowledge the customer's concern or feelings before moving to procedural steps.
+Structure the response as a clear, numbered step-by-step process for actionable guidance.
+Use bold formatting for key step headers to enhance readability and scannability.
+Reiterate the company's commitment to resolving the issue and valuing feedback at the end.
+Ensure all critical steps from the model answer are covered, including gathering information, contacting support, explaining clearly, providing evidence, staying in touch, and following up.

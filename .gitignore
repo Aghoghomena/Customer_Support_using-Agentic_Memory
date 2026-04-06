@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# Memory (generated at runtime)
+memory/chroma_db/
+memory/sample.parquet
+
+# macOS
+.DS_Store
+
+# Graph output
+supervisor_graph.png
+
+# IDE
+.vscode/
+.idea/
