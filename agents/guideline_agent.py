@@ -108,3 +108,9 @@ def build_guideline_agent():
 
 
 guideline_agent = build_guideline_agent()
+    # Or save as PNG (requires pygraphviz)
+try:
+    guideline_agent.get_graph().draw_mermaid_png(output_file_path="guideline_agent.png")
+    print("\nGraph saved as guideline_agent.png")
+except Exception as e:
+    print(f"\nCould not save PNG (pygraphviz may not be installed): {e}")

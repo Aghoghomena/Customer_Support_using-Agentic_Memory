@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from agents.skill_function import retrieve_skills, add_skill
 from utils.myclasses import AgentState
 from utils.config import llm, TOP_K_SKILLS
@@ -87,3 +90,9 @@ def build_skill_agent():
 
 
 skill_agent = build_skill_agent()
+    # Or save as PNG (requires pygraphviz)
+try:
+    skill_agent.get_graph().draw_mermaid_png(output_file_path="skill_agent.png")
+    print("\nGraph saved as skill_agent.png")
+except Exception as e:
+    print(f"\nCould not save PNG (pygraphviz may not be installed): {e}")

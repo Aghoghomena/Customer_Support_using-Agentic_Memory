@@ -41,10 +41,13 @@ agentic-memory/
 │   ├── skill_function.py      # ChromaDB read/write functions
 │   ├── skills_file_functions.py # Markdown skill file read/write functions
 │   ├── guideline_agent.py     # Updates guidelines.txt from interactions
-│   └── training.py            # Training loop entry point
+│   ├── training.py            # Training loop — local parquet or LangSmith dataset
+│   ├── create_datasets.py     # Creates train/eval datasets in LangSmith
+│   ├── evaluator.py           # LLM-as-judge evaluation via LangSmith
+│   └── clear_memory.py        # Wipes ChromaDB, skill files, and guidelines
 ├── utils/
 │   ├── config.py              # LLM setup, paths, flags (TRAINING_MODE, SKILL_APPROACH)
-│   ├── data.py                # CSV loading and parquet sample storage
+│   ├── data.py                # CSV loading, parquet sample storage, train/test split
 │   ├── lms.py                 # LLM factory (Groq, DeepSeek, LM Studio, Ollama, etc.)
 │   └── myclasses.py           # AgentState TypedDict
 ├── memory/
@@ -83,7 +86,7 @@ LANGSMITH_API_KEY=your_key
 LANGSMITH_PROJECT=your_project_name
 
 GROQ_API_KEY=your_key
-DEEPSEEK_API_KEY=your_key       # optional
+DEEPSEEK_API_KEY=your_key       # default model
 MISTRAL_API_KEY=your_key        # optional
 ```
 
@@ -93,31 +96,60 @@ In `utils/config.py`:
 
 ```python
 TRAINING_MODE = True       # True = use model answers as training signal
-SKILL_APPROACH = 1         # 1 = ChromaDB, 2 = file-based markdown
+SKILL_APPROACH = 2         # 1 = ChromaDB, 2 = file-based markdown (default)
 TOP_K_SKILLS = 3           # how many skills to retrieve per query
+MAX_GUIDELINES = 7         # max number of guidelines kept in guidelines.txt
+rows_per_category = 4      # rows sampled per category when building the parquet sample
+
+TRAIN_DATASET_NAME = "customer-support-train"
+EVAL_DATASET_NAME  = "customer-support-eval"
 ```
 
 ---
 
 ## Running
 
-### Prepare training data (run once)
+### Step 1 — Prepare training data (run once)
 
-Samples 2 rows per category from the CSV and saves to `memory/sample.parquet`:
+Samples `rows_per_category` rows per category from the CSV and saves to `memory/sample.parquet`:
 
 ```bash
 uv run python utils/data.py
 ```
 
-### Run a training session
+### Step 2 — (Optional) Push datasets to LangSmith
 
-Picks random examples from the sample, runs the full agent pipeline:
+Splits the parquet sample 70/30 into train and eval datasets and uploads them to LangSmith:
+
+```bash
+uv run python agents/create_datasets.py
+```
+
+This creates two named datasets in LangSmith (`customer-support-train` and `customer-support-eval`) that are used by the training and evaluation scripts.
+
+### Step 3 — Run a training session
+
+**From LangSmith dataset (default):**
 
 ```bash
 uv run python agents/training.py
 ```
 
-This will print each step the supervisor takes:
+Pulls examples from the `customer-support-train` LangSmith dataset and runs the full agent pipeline on each one.
+
+**From local parquet (switch the `__main__` block in `training.py`):**
+
+```python
+# in agents/training.py — change __main__ to:
+run_training()        # local sample.parquet, 1 random example
+# run_training_from_langsmith()
+```
+
+```bash
+uv run python agents/training.py
+```
+
+Training output looks like:
 
 ```
 [1/1] Category: ORDER | Intent: track_refund
@@ -131,9 +163,33 @@ This will print each step the supervisor takes:
   [Service Agent] Answered: Here is how to track your refund...
 [Supervisor] Agent needed help — delegating ingestion to skill agent
   [Skill Agent] Extracted skill: ...
-  [ChromaDB] Skill ingested
 [Supervisor] Delegate guideline development
   [Guideline Agent] Guidelines updated
+```
+
+### Run evaluation (LLM-as-judge)
+
+Runs the agent against the `customer-support-eval` LangSmith dataset, scores each response 0–3 using an LLM judge, and logs results to LangSmith:
+
+```bash
+uv run python agents/evaluator.py
+```
+
+The evaluator assesses five dimensions (approach, tone, content, completeness, and fabrication) and normalises scores to 0–1. Results are visible in LangSmith under the experiment prefix (default: `"baseline"`).
+
+To compare before and after training, run evaluation with a descriptive prefix:
+
+```python
+# in agents/evaluator.py — change __main__ to:
+run_evaluation(experiment_prefix="after-training-1")
+```
+
+### Clear memory (start fresh)
+
+Wipes ChromaDB, all skill files, and `guidelines.txt`:
+
+```bash
+uv run python agents/clear_memory.py
 ```
 
 ### Inspect stored skills (ChromaDB approach)
@@ -154,7 +210,7 @@ supervisor_graph.png
 
 ## How Training Works
 
-1. A customer query + ground truth `response` from the CSV is loaded
+1. A customer query + ground truth `response` from the dataset is loaded
 2. The supervisor checks memory for relevant past skills
 3. The service agent tries to answer from its own knowledge and skills
 4. If not confident (`NEED_MORE_INFO`), the model answer is injected as a reference
@@ -163,3 +219,14 @@ supervisor_graph.png
 7. On the next run, retrieved skills and guidelines are injected into the prompt — the agent improves
 
 > The LLM weights are not updated. Learning happens through the memory files (skills + guidelines) that accumulate across runs.
+
+## Recommended Workflow
+
+```
+1. uv run python utils/data.py                  # build parquet sample (once)
+2. uv run python agents/create_datasets.py       # push train/eval to LangSmith (once)
+3. uv run python agents/evaluator.py             # baseline score (before training)
+4. uv run python agents/training.py              # run N training sessions
+5. uv run python agents/evaluator.py             # compare score after training
+6. uv run python agents/clear_memory.py          # reset when starting a new experiment
+```

@@ -160,3 +160,9 @@ def build_skill_file_agent():
 
 
 skill_file_agent = build_skill_file_agent()
+    # Or save as PNG (requires pygraphviz)
+try:
+    skill_file_agent.get_graph().draw_mermaid_png(output_file_path="skill_file_agent.png")
+    print("\nGraph saved as skill_file_agent.png")
+except Exception as e:
+    print(f"\nCould not save PNG (pygraphviz may not be installed): {e}")

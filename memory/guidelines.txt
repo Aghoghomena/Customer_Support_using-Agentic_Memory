@@ -1,5 +1,7 @@
-Always acknowledge the customer's concern or feelings before moving to procedural steps.
-Structure the response as a clear, numbered step-by-step process for actionable guidance.
-Use bold formatting for key step headers to enhance readability and scannability.
-Reiterate the company's commitment to resolving the issue and valuing feedback at the end.
-Ensure all critical steps from the model answer are covered, including gathering information, contacting support, explaining clearly, providing evidence, staying in touch, and following up.
+Always acknowledge the customer's specific request and validate their need for information.
+When a direct answer is available, provide it immediately instead of redirecting or requesting unnecessary clarification.
+Use clear, direct language and specific formatting to guide the customer to the fastest resolution path.
+Proactively use the information the customer has already provided to fulfill their request without asking for it again.
+Focus on actionable steps and required information rather than expressing general commitment or prioritizing satisfaction.
+Avoid overly empathetic or verbose language that delays getting to the necessary information or steps.
+When a self-service path is the fastest option, provide the direct link or specific location instead of offering to look it up manually.

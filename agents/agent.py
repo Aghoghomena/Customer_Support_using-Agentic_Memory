@@ -39,9 +39,16 @@ def supervisor_node(state: AgentState) -> AgentState:
     elif state.get("response") is None:
         print(f"  [Supervisor] No response yet — send to service agent")
         state["next"] = "service_agent"
+    
+    # Fix — ingests from every training example that has a model answer
+    # elif state["training_mode"] and state.get("model_answer") and not state.get("extracted_skill"):
+    #     print(f"  [Supervisor] Agent needed help — delegating ingestion to skill agent")
+    #     state["next"] = "skill_ingestion"
+
     elif state["training_mode"] and state["used_model_answer"] and not state.get("extracted_skill"):
         print(f"  [Supervisor] Agent needed help — delegating ingestion to skill agent")
         state["next"] = "skill_ingestion"
+        
     elif state["training_mode"] and state.get("response") and not state.get("guidelines_updated"):
         print(f"  [Supervisor] Step 4 — delegate guideline development")
         state["next"] = "guideline"
