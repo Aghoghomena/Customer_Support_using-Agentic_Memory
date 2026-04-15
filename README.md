@@ -1,6 +1,6 @@
 # Agentic Memory — Customer Support Agent
 
-> A multi-agent AI system that gets smarter with every conversation — without retraining the model.
+> A multi-agent AI system that gets smarter with every conversation — without retraining the model. Built with LangGraph, LangSmith, ChromaDB, Python.
 
 ---
 
@@ -15,6 +15,26 @@ This project is an AI-powered customer support agent that learns from experience
 Most AI chatbots are frozen — they give the same quality of answer on day one as they do on day one hundred. This project solves that by separating *knowledge* from *model weights*. The LLM itself never changes, but its behaviour improves because it gains access to a growing library of skills and guidelines written from real interactions.
 
 This is meaningful for any business running repetitive customer support at scale: instead of prompt-engineering a static system, you get a system that teaches itself what good answers look like, and bakes those lessons into its future behaviour.
+
+---
+
+## If You're New to This — Key Concepts
+
+You don't need a technical background to understand what makes this project interesting. Here are the four ideas it builds on.
+
+**Large Language Model (LLM)**
+An LLM is the AI "brain" — a model like GPT or DeepSeek that has read vast amounts of text and can generate human-like responses. Think of it as a very well-read new hire who joined the company with broad general knowledge but no experience with *your* specific customers, policies, or common issues.
+
+**The problem: standard AI doesn't learn on the job**
+Once an LLM is trained, its knowledge is fixed. It can't remember yesterday's conversation, pick up on patterns from past tickets, or get better at your specific workflows over time. Every interaction starts from scratch. This is fine for general tasks, but limiting for specialised, repetitive work like customer support — where the most valuable knowledge comes from *experience*, not textbooks.
+
+**Agentic memory: a workaround that actually works**
+Instead of retraining the model (which is expensive and slow), agentic memory stores what the AI learns *outside* the model — in plain files. After each interaction, the system writes down what worked: the right tone, the right steps, the key information to include. The next time a similar question comes in, those notes are handed to the AI before it answers. The model didn't change — but it now has better notes to work from.
+
+> Think of it like a new hire who reads the team's best-practices wiki before every call. The wiki gets updated after each tricky case. Over time, responses improve — not because anyone got smarter, but because the knowledge is written down and shared.
+
+**Multi-agent system**
+Rather than one AI trying to do everything, this project splits the work across several specialised agents — one that looks up relevant past solutions, one that answers the query, one that extracts new skills from each interaction, and one that updates the team's rules. A supervisor coordinates them all. This mirrors how a well-run support team works: different people handle different parts of the process, and a team lead decides who does what next.
 
 ---
 
@@ -109,7 +129,7 @@ Writing a strict LLM-as-judge that scores harshly (and consistently) took severa
 
 ## Demo
 
-> Coming soon — will include a short screen recording of a training session and before/after evaluation scores from LangSmith.
+> Coming soon — a short screen recording of a full training session and before/after LangSmith evaluation scores.
 
 ---
 
@@ -233,3 +253,7 @@ agentic-memory/
 │   └── customer-dataset.csv   # 26k+ labelled customer support examples
 └── pyproject.toml
 ```
+
+---
+
+Built by Aghogho Joy Olokpa — connect with me on [LinkedIn](https://linkedin.com).
